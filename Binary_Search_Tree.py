@@ -1,129 +1,171 @@
 class node:
-    def __init__(self,data=None):
-        self.data=data
-        self.next=None
+	def __init__(self,value=None):
+		self.value=value
+		self.left_child=None
+		self.right_child=None
+		self.parent=None # pointer to parent node in tree
 
-class linked_list:
-    def __init__(self):
-        self.head=node()
+class binary_search_tree:
+	def __init__(self):
+		self.root=None
 
-    # Adds new node containing 'data' to the end of the linked list.
-    def append(self,data):
-        new_node=node(data)
-        cur=self.head
-        while cur.next!=None:
-            cur=cur.next
-        cur.next=new_node
+	def insert(self,value):
+		if self.root==None:
+			self.root=node(value)
+		else:
+			self._insert(value,self.root)
 
-    # Returns the length (integer) of the linked list.
-    def length(self):
-        cur=self.head
-        total=0
-        while cur.next!=None:
-            total+=1
-            cur=cur.next
-        return total 
+	def _insert(self,value,cur_node):
+		if value<cur_node.value:
+			if cur_node.left_child==None:
+				cur_node.left_child=node(value)
+				cur_node.left_child.parent=cur_node # set parent
+			else:
+				self._insert(value,cur_node.left_child)
+		elif value>cur_node.value:
+			if cur_node.right_child==None:
+				cur_node.right_child=node(value)
+				cur_node.right_child.parent=cur_node # set parent
+			else:
+				self._insert(value,cur_node.right_child)
+		else:
+			print("Value already in tree!")
 
-    # Prints out the linked list in traditional Python list format. 
-    def display(self):
-        elems=[]
-        cur_node=self.head
-        while cur_node.next!=None:
-            cur_node=cur_node.next
-            elems.append(cur_node.data)
-        print(elems)
+	def print_tree(self):
+		if self.root!=None:
+			self._print_tree(self.root)
 
-    # Returns the value of the node at 'index'. 
-    def get(self,index):
-        if index>=self.length() or index<0: # added 'index<0' post-video
-            print("ERROR: 'Get' Index out of range!")
-            return None
-      cur_idx=0
-      cur_node=self.head
-      while True:
-          cur_node=cur_node.next
-          if cur_idx==index: return cur_node.data
-        cur_idx+=1
+	def _print_tree(self,cur_node):
+		if cur_node!=None:
+			self._print_tree(cur_node.left_child)
+			print (str(cur_node.value))
+			self._print_tree(cur_node.right_child)
 
-    # Deletes the node at index 'index'.
-    def erase(self,index):
-      if index>=self.length() or index<0: # added 'index<0' post-video
-          print("ERROR: 'Erase' Index out of range!")
-          return 
-      cur_idx=0
-      cur_node=self.head
-      while True:
-          last_node=cur_node
-          cur_node=cur_node.next
-          if cur_idx==index:
-              last_node.next=cur_node.next
-              return
-          cur_idx+=1
+	def height(self):
+		if self.root!=None:
+			return self._height(self.root,0)
+		else:
+			return 0
 
-    # Allows for bracket operator syntax (i.e. a[0] to return first item).
-    def __getitem__(self,index):
-        return self.get(index)
+	def _height(self,cur_node,cur_height):
+		if cur_node==None: return cur_height
+		left_height=self._height(cur_node.left_child,cur_height+1)
+		right_height=self._height(cur_node.right_child,cur_height+1)
+		return max(left_height,right_height)
 
+	def find(self,value):
+		if self.root!=None:
+			return self._find(value,self.root)
+		else:
+			return None
 
-    #######################################################
-    # Functions added after video tutorial
+	def _find(self,value,cur_node):
+		if value==cur_node.value:
+			return cur_node
+		elif value<cur_node.value and cur_node.left_child!=None:
+			return self._find(value,cur_node.left_child)
+		elif value>cur_node.value and cur_node.right_child!=None:
+			return self._find(value,cur_node.right_child)
 
-    # Inserts a new node at index 'index' containing data 'data'.
-    # Indices begin at 0. If the provided index is greater than or 
-    # equal to the length of the linked list the 'data' will be appended.
-    def insert(self,index,data):
-        if index>=self.length() or index<0:
-            return self.append(data)
-        cur_node=self.head
-        prior_node=self.head
-        cur_idx=0
-        while True:
-            cur_node=cur_node.next
-            if cur_idx==index: 
-                new_node=node(data)
-                prior_node.next=new_node
-                new_node.next=cur_node
-                return
-            prior_node=cur_node
-            cur_idx+=1
+	def delete_value(self,value):
+		return self.delete_node(self.find(value))
 
-    # Inserts the node 'node' at index 'index'. Indices begin at 0.
-    # If the 'index' is greater than or equal to the length of the linked 
-    # list the 'node' will be appended.
-    def insert_node(self,index,node):
-        if index<0:
-            print("ERROR: 'Erase' Index cannot be negative!")
-            return
-        if index>=self.length(): # append the node
-            cur_node=self.head
-            while cur_node.next!=None:
-                cur_node=cur_node.next
-            cur_node.next=node
-            return
-        cur_node=self.head
-        prior_node=self.head
-        cur_idx=0
-        while True:
-            cur_node=cur_node.next
-            if cur_idx==index: 
-                prior_node.next=node
-                return
-            prior_node=cur_node
-            cur_idx+=1
+	def delete_node(self,node):
 
-    # Sets the data at index 'index' equal to 'data'.
-    # Indices begin at 0. If the 'index' is greater than or equal 
-    # to the length of the linked list a warning will be printed 
-    # to the user.
-    def set(self,index,data):
-        if index>=self.length() or index<0:
-            print("ERROR: 'Set' Index out of range!")
-            return
-        cur_node=self.head
-        cur_idx=0
-        while True:
-            cur_node=cur_node.next
-            if cur_idx==index: 
-                cur_node.data=data
-                return
-            cur_idx+=1
+		## -----
+		# Improvements since prior lesson
+
+		# Protect against deleting a node not found in the tree
+		if node==None or self.find(node.value)==None:
+			print("Node to be deleted not found in the tree!")
+			return None 
+		## -----
+
+		# returns the node with min value in tree rooted at input node
+		def min_value_node(n):
+			current=n
+			while current.left_child!=None:
+				current=current.left_child
+			return current
+
+		# returns the number of children for the specified node
+		def num_children(n):
+			num_children=0
+			if n.left_child!=None: num_children+=1
+			if n.right_child!=None: num_children+=1
+			return num_children
+
+		# get the parent of the node to be deleted
+		node_parent=node.parent
+
+		# get the number of children of the node to be deleted
+		node_children=num_children(node)
+
+		# break operation into different cases based on the
+		# structure of the tree & node to be deleted
+
+		# CASE 1 (node has no children)
+		if node_children==0:
+
+			# Added this if statement post-video, previously if you 
+			# deleted the root node it would delete entire tree.
+			if node_parent!=None:
+				# remove reference to the node from the parent
+				if node_parent.left_child==node:
+					node_parent.left_child=None
+				else:
+					node_parent.right_child=None
+			else:
+				self.root=None
+
+		# CASE 2 (node has a single child)
+		if node_children==1:
+
+			# get the single child node
+			if node.left_child!=None:
+				child=node.left_child
+			else:
+				child=node.right_child
+
+			# Added this if statement post-video, previously if you 
+			# deleted the root node it would delete entire tree.
+			if node_parent!=None:
+				# replace the node to be deleted with its child
+				if node_parent.left_child==node:
+					node_parent.left_child=child
+				else:
+					node_parent.right_child=child
+			else:
+				self.root=child
+
+			# correct the parent pointer in node
+			child.parent=node_parent
+
+		# CASE 3 (node has two children)
+		if node_children==2:
+
+			# get the inorder successor of the deleted node
+			successor=min_value_node(node.right_child)
+
+			# copy the inorder successor's value to the node formerly
+			# holding the value we wished to delete
+			node.value=successor.value
+
+			# delete the inorder successor now that it's value was
+			# copied into the other node
+			self.delete_node(successor)
+
+	def search(self,value):
+		if self.root!=None:
+			return self._search(value,self.root)
+		else:
+			return False
+
+	def _search(self,value,cur_node):
+		if value==cur_node.value:
+			return True
+		elif value<cur_node.value and cur_node.left_child!=None:
+			return self._search(value,cur_node.left_child)
+		elif value>cur_node.value and cur_node.right_child!=None:
+			return self._search(value,cur_node.right_child)
+		return False 
